@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+version 'v1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Guava
+    implementation 'com.google.guava:guava:28.1-jre'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+}

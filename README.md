@@ -1,2 +1,2 @@
-# advent-of-code-2019
-Solutions for Advent of Code 2019 written in Java
+# Advent of Code 2019 Edition
+Solutions for the Advent of Code 2019 written in Java
