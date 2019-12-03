@@ -45,6 +45,10 @@ public class Launcher {
 
     private static Executable getCorrespondingExecutableDay(int day) {
         switch (day) {
+            case 1:
+                return new Day01_TheTyrannyOfTheRocketEquation();
+            case 2:
+                return new Day02_1202ProgramAlarm();
             default:
                 return new Day00_NotDoneYet();
         }
