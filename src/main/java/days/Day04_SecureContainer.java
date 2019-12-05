@@ -72,11 +72,11 @@ public class Day04_SecureContainer implements Executable {
 
         for (int i = 0; i < digits.size() - 1; i++) {
             if (digits.get(i).equals(digits.get(i + 1))) {
-                digitsAppearance.compute(digits.get(i), (k, v) -> {
-                    if (v == null) {
+                digitsAppearance.compute(digits.get(i), (key, value) -> {
+                    if (value == null) {
                         return 2;
                     } else {
-                        return v + 1;
+                        return value + 1;
                     }
                 });
             }
@@ -86,6 +86,7 @@ public class Day04_SecureContainer implements Executable {
 
     }
 
+    // https://stackoverflow.com/questions/3389264/how-to-get-the-separate-digits-of-an-int-number
     private List<Integer> getDigits(int number) {
         List<Integer> digits = new ArrayList<>();
 
