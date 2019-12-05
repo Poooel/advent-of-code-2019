@@ -49,6 +49,8 @@ public class Launcher {
                 return new Day01_TheTyrannyOfTheRocketEquation();
             case 2:
                 return new Day02_1202ProgramAlarm();
+            case 4:
+                return new Day04_SecureContainer();
             default:
                 return new Day00_NotDoneYet();
         }
