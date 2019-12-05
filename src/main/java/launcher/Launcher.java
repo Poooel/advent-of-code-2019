@@ -1,5 +1,6 @@
 package launcher;
 
+import com.google.common.base.Stopwatch;
 import days.*;
 import lombok.SneakyThrows;
 
@@ -23,21 +24,31 @@ public class Launcher {
         );
 
         if (choosenPart == 1) {
+            long startTime = System.currentTimeMillis();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartOne();
+            long endTime = System.currentTimeMillis();
+
             System.out.println(
                 String.format(
-                    "The answer for Day %02d Part %d is: %s",
+                    "The answer for Day %02d Part %d is: %s (executed in approx. %dms)",
                     choosenDay,
                     choosenPart,
-                    getCorrespondingExecutableDay(choosenDay).executePartOne()
+                    result,
+                    endTime - startTime
                 )
             );
         } else {
+            long startTime = System.currentTimeMillis();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartTwo();
+            long endTime = System.currentTimeMillis();
+
             System.out.println(
                 String.format(
-                    "The answer for Day %02d Part %d is: %s",
+                    "The answer for Day %02d Part %d is: %s (executed in approx. %dms)",
                     choosenDay,
                     choosenPart,
-                    getCorrespondingExecutableDay(choosenDay).executePartTwo()
+                    result,
+                    endTime - startTime
                 )
             );
         }
