@@ -1,6 +1,5 @@
 package launcher;
 
-import com.google.common.base.Stopwatch;
 import days.*;
 import lombok.SneakyThrows;
 
@@ -60,6 +59,8 @@ public class Launcher {
                 return new Day01_TheTyrannyOfTheRocketEquation();
             case 2:
                 return new Day02_1202ProgramAlarm();
+            case 3:
+                return new Day03_CrossedWires();
             case 4:
                 return new Day04_SecureContainer();
             default:
