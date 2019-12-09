@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class Day01_TheTyrannyOfTheRocketEquation implements Executable {
     @Override
-    public String executePartOne() {
+    public Object executePartOne() {
         List<String> input = ChallengeHelper.readInputData(1);
         // Cast strings to doubles to be able to divide it and keep precision
         List<Double> inputAsDoubles = input.stream()
@@ -16,28 +16,24 @@ public class Day01_TheTyrannyOfTheRocketEquation implements Executable {
             .boxed()
             .collect(Collectors.toList());
 
-        return String.valueOf(
-            inputAsDoubles
+        return inputAsDoubles
             .stream()
             .mapToDouble(fuel -> Math.floor(fuel / 3) - 2)
-            .sum()
-        );
+            .sum();
     }
 
     @Override
-    public String executePartTwo() {
+    public Object executePartTwo() {
         List<String> input = ChallengeHelper.readInputData(1);
         List<Double> inputAsDoubles = input.stream()
             .mapToDouble(Double::parseDouble)
             .boxed()
             .collect(Collectors.toList());
 
-        return String.valueOf(
-            inputAsDoubles
-                .stream()
-                .mapToDouble(fuel -> computeFuelRequirements(fuel, 0))
-                .sum()
-        );
+        return inputAsDoubles
+            .stream()
+            .mapToDouble(fuel -> computeFuelRequirements(fuel, 0))
+            .sum();
     }
 
     private double computeFuelRequirements(double fuel, double sum) {

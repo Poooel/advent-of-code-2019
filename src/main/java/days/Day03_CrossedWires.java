@@ -9,19 +9,19 @@ import java.util.*;
 
 public class Day03_CrossedWires implements Executable {
     @Override
-    public String executePartOne() {
+    public Object executePartOne() {
         List<String> input = ChallengeHelper.readInputData(3);
         Set<Point> firstWire = drawWire(input.get(0));
         Set<Point> secondWire = drawWire(input.get(1));
-        return String.valueOf(findClosestIntersection(firstWire, secondWire));
+        return findClosestIntersection(firstWire, secondWire);
     }
 
     @Override
-    public String executePartTwo() {
+    public Object executePartTwo() {
         List<String> input = ChallengeHelper.readInputData(3);
         Set<Point> firstWire = drawWire(input.get(0));
         Set<Point> secondWire = drawWire(input.get(1));
-        return String.valueOf(findLowestStepIntersection(firstWire, secondWire));
+        return findLowestStepIntersection(firstWire, secondWire);
     }
 
     private Set<Point> drawWire(String input) {

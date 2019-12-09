@@ -24,7 +24,7 @@ public class Launcher {
 
         if (choosenPart == 1) {
             long startTime = System.currentTimeMillis();
-            String result = getCorrespondingExecutableDay(choosenDay).executePartOne();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartOne().toString();
             long endTime = System.currentTimeMillis();
 
             System.out.println(
@@ -38,7 +38,7 @@ public class Launcher {
             );
         } else {
             long startTime = System.currentTimeMillis();
-            String result = getCorrespondingExecutableDay(choosenDay).executePartTwo();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartTwo().toString();
             long endTime = System.currentTimeMillis();
 
             System.out.println(
@@ -63,6 +63,8 @@ public class Launcher {
                 return new Day03_CrossedWires();
             case 4:
                 return new Day04_SecureContainer();
+            case 8:
+                return new Day08_SpaceImageFormat();
             default:
                 return new Day00_NotDoneYet();
         }

@@ -7,21 +7,21 @@ import java.util.*;
 
 public class Day04_SecureContainer implements Executable {
     @Override
-    public String executePartOne() {
+    public Object executePartOne() {
         List<String> input = ChallengeHelper.readInputData(4);
         String[] inputs = input.get(0).split("-");
         int lowerBound = Integer.parseInt(inputs[0]);
         int upperBound = Integer.parseInt(inputs[1]);
-        return String.valueOf(possibleSolutions(lowerBound, upperBound, false));
+        return possibleSolutions(lowerBound, upperBound, false);
     }
 
     @Override
-    public String executePartTwo() {
+    public Object executePartTwo() {
         List<String> input = ChallengeHelper.readInputData(4);
         String[] inputs = input.get(0).split("-");
         int lowerBound = Integer.parseInt(inputs[0]);
         int upperBound = Integer.parseInt(inputs[1]);
-        return String.valueOf(possibleSolutions(lowerBound, upperBound, true));
+        return possibleSolutions(lowerBound, upperBound, true);
     }
 
     private int possibleSolutions(int lowerBound, int upperBound, boolean strict) {

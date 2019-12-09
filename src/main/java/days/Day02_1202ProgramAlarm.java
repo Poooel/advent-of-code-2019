@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Day02_1202ProgramAlarm implements Executable {
     @Override
-    public String executePartOne() {
+    public Object executePartOne() {
         // Get input from input file
         List<String> input = ChallengeHelper.readInputData(2);
         // Parse input into an integer array
@@ -18,14 +18,14 @@ public class Day02_1202ProgramAlarm implements Executable {
         // Compute the final state of the machine
         int[] finalState = computeState(initialState);
         // Print the first value of the state
-        return String.valueOf(finalState[0]);
+        return finalState[0];
     }
 
     @Override
-    public String executePartTwo() {
+    public Object executePartTwo() {
         List<String> input = ChallengeHelper.readInputData(2);
         int[] parsedInput = parseInput(input);
-        return String.valueOf(findState(parsedInput));
+        return findState(parsedInput);
     }
 
     private int findState(int[] initialState) {
