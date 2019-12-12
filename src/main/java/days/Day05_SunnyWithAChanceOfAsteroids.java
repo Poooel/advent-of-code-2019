@@ -35,18 +35,11 @@ public class Day05_SunnyWithAChanceOfAsteroids implements Executable {
         for (int i = 0; i < state.length; i++) {
             int[] instructions = deconstructOpcode(state[i]);
 
-            int opcode = instructions[0] + (instructions[1] * 10);
-
-            if (opcode == 99) {
-                return lastResult;
-            }
-
-            Parameter firstParameter = new Parameter();
-            Parameter secondParameter = new Parameter();
+            Parameter firstParameter = new Parameter(instructions[2]);
+            Parameter secondParameter = new Parameter(instructions[3]);
             Result result;
 
-            firstParameter.setMode(instructions[2]);
-            secondParameter.setMode(instructions[3]);
+            int opcode = instructions[0] + (instructions[1] * 10);
 
             switch (opcode) {
                 case 1:
@@ -74,6 +67,8 @@ public class Day05_SunnyWithAChanceOfAsteroids implements Executable {
                 case 8:
                     result = equals(state, i, firstParameter, secondParameter);
                     break;
+                case 99:
+                    return lastResult;
                 default:
                     result = new Result(0, 0, Integer.MIN_VALUE, false);
                     break;
@@ -193,6 +188,10 @@ public class Day05_SunnyWithAChanceOfAsteroids implements Executable {
     private static final class Parameter {
         private int mode;
         private int value;
+
+        public Parameter(int mode) {
+            this.mode = mode;
+        }
     }
 
     @Value
