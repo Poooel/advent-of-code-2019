@@ -63,6 +63,8 @@ public class Launcher {
                 return new Day03_CrossedWires();
             case 4:
                 return new Day04_SecureContainer();
+            case 5:
+                return new Day05_SunnyWithAChanceOfAsteroids();
             case 8:
                 return new Day08_SpaceImageFormat();
             default:
