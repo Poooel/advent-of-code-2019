@@ -65,6 +65,8 @@ public class Launcher {
                 return new Day04_SecureContainer();
             case 5:
                 return new Day05_SunnyWithAChanceOfAsteroids();
+            case 7:
+                return new Day07_AmplificationCircuit();
             case 8:
                 return new Day08_SpaceImageFormat();
             default:
