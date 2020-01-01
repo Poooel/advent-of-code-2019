@@ -4,24 +4,18 @@ import lombok.Data;
 import lombok.Value;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class IntcodeComputer {
     private final int[] program;
-    private int[] inputs;
+    private final Supplier<Integer> inputSupplier;
 
-    public IntcodeComputer(int[] program) {
-        this.program = program;
+    public IntcodeComputer(String program, Supplier<Integer> inputSupplier) {
+        this.program = parseProgram(program);
+        this.inputSupplier = inputSupplier;
     }
 
-    public IntcodeComputer(String program) {
-        this.program = parseInput(program);
-    }
-
-    public void setInputs(int... inputs) {
-        this.inputs = inputs;
-    }
-
-    private int[] parseInput(String input) {
+    private int[] parseProgram(String input) {
         return Arrays.stream(input.split(","))
             .mapToInt(Integer::parseInt)
             .toArray();
@@ -29,7 +23,6 @@ public class IntcodeComputer {
 
     public int run() {
         int lastResult = -1;
-        int inputPointer = 0;
         int[] program = Arrays.copyOf(this.program, this.program.length);
 
         for (int i = 0; i < program.length; i++) {
@@ -49,7 +42,7 @@ public class IntcodeComputer {
                     result = multiply(program, i, firstParameter, secondParameter);
                     break;
                 case 3:
-                    result = input(program, i, firstParameter, inputs[inputPointer++]);
+                    result = input(program, i, firstParameter, inputSupplier.get());
                     break;
                 case 4:
                     result = output(program, i, firstParameter);
