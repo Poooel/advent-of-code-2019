@@ -10,16 +10,14 @@ public class Day05_SunnyWithAChanceOfAsteroids implements Executable {
     @Override
     public Object executePartOne() {
         List<String> input = ChallengeHelper.readInputData(5);
-        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0));
-        intcodeComputer.setInputs(1);
+        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0), () -> 1);
         return intcodeComputer.run();
     }
 
     @Override
     public Object executePartTwo() {
         List<String> input = ChallengeHelper.readInputData(5);
-        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0));
-        intcodeComputer.setInputs(5);
+        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0), () -> 5);
         return intcodeComputer.run();
     }
 }
