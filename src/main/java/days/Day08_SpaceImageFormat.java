@@ -123,8 +123,8 @@ public class Day08_SpaceImageFormat implements Executable {
     }
 
     private void displayImage(int[][] image) {
-        char black = '⬛';
-        char white = '⬜';
+        char black = /*'⬛'*/'B';
+        char white = /*'⬜'*/'W';
 
         StringBuilder imageRepresentation = new StringBuilder();
 
