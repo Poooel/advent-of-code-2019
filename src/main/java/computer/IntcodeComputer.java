@@ -1,18 +1,27 @@
 package computer;
 
-import lombok.Data;
-import lombok.Value;
+import lombok.*;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class IntcodeComputer {
-    private final int[] program;
-    private final Supplier<Integer> inputSupplier;
+    private final static int IO_QUEUE_CAPACITY = 1000;
 
-    public IntcodeComputer(String program, Supplier<Integer> inputSupplier) {
+    private final int[] program;
+
+    @Getter
+    @Setter
+    private BlockingQueue<Integer> inputQueue;
+    @Getter
+    @Setter
+    private BlockingQueue<Integer> outputQueue;
+
+    public IntcodeComputer(String program) {
         this.program = parseProgram(program);
-        this.inputSupplier = inputSupplier;
+        this.inputQueue = new ArrayBlockingQueue<>(IO_QUEUE_CAPACITY);
+        this.outputQueue = new ArrayBlockingQueue<>(IO_QUEUE_CAPACITY);
     }
 
     private int[] parseProgram(String input) {
@@ -21,8 +30,8 @@ public class IntcodeComputer {
             .toArray();
     }
 
-    public int run() {
-        int lastResult = -1;
+    @SneakyThrows
+    public void run() {
         int[] program = Arrays.copyOf(this.program, this.program.length);
 
         for (int i = 0; i < program.length; i++) {
@@ -42,11 +51,11 @@ public class IntcodeComputer {
                     result = multiply(program, i, firstParameter, secondParameter);
                     break;
                 case 3:
-                    result = input(program, i, firstParameter, inputSupplier.get());
+                    result = input(program, i, firstParameter, inputQueue.take());
                     break;
                 case 4:
                     result = output(program, i, firstParameter);
-                    lastResult = result.getValue();
+                    outputQueue.put(result.getValue());
                     break;
                 case 5:
                     result = jumpIfTrue(program, i, firstParameter, secondParameter);
@@ -61,7 +70,7 @@ public class IntcodeComputer {
                     result = equals(program, i, firstParameter, secondParameter);
                     break;
                 case 99:
-                    return lastResult;
+                    return;
                 default:
                     result = new Result(0, 0, Integer.MIN_VALUE, false);
                     break;
@@ -73,8 +82,6 @@ public class IntcodeComputer {
 
             i = result.getInstructionPointer();
         }
-
-        return Integer.MAX_VALUE;
     }
 
     private int[] deconstructOpcode(int opcode) {
@@ -91,18 +98,20 @@ public class IntcodeComputer {
         return digits;
     }
 
-    private void getParameterValue(int[] program, int instructionPointer, Parameter parameter) {
+    private Parameter getParameterValue(int[] program, int instructionPointer, Parameter parameter) {
         if (parameter.getMode() == 0) {
             int address = program[instructionPointer];
             parameter.setValue(program[address]);
         } else {
             parameter.setValue(program[instructionPointer]);
         }
+
+        return parameter;
     }
 
     private Result add(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
 
         int result = firstParameter.getValue() + secondParameter.getValue();
         int resultAddress = program[++instructionPointer];
@@ -111,8 +120,8 @@ public class IntcodeComputer {
     }
 
     private Result multiply(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
 
         int result = firstParameter.getValue() * secondParameter.getValue();
         int resultAddress = program[++instructionPointer];
@@ -122,18 +131,21 @@ public class IntcodeComputer {
 
     private Result input(int[] program, int instructionPointer, Parameter firstParameter, int inputValue) {
         firstParameter.setMode(1);
-        getParameterValue(program, ++instructionPointer, firstParameter);
+
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+
         return new Result(inputValue, firstParameter.getValue(), instructionPointer, true);
     }
 
     private Result output(int[] program, int instructionPointer, Parameter firstParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+
         return new Result(firstParameter.getValue(), 0, instructionPointer, false);
     }
 
     private Result jumpIfTrue(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
 
         if (firstParameter.getValue() != 0) {
             instructionPointer = secondParameter.getValue() - 1;
@@ -143,8 +155,8 @@ public class IntcodeComputer {
     }
 
     private Result jumpIfFalse(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
 
         if (firstParameter.getValue() == 0) {
             instructionPointer = secondParameter.getValue() - 1;
@@ -154,8 +166,9 @@ public class IntcodeComputer {
     }
 
     private Result lessThan(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
+
         int resultAddress = program[++instructionPointer];
 
         if (firstParameter.getValue() < secondParameter.getValue()) {
@@ -166,8 +179,9 @@ public class IntcodeComputer {
     }
 
     private Result equals(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        getParameterValue(program, ++instructionPointer, firstParameter);
-        getParameterValue(program, ++instructionPointer, secondParameter);
+        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
+        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
+
         int resultAddress = program[++instructionPointer];
 
         if (firstParameter.getValue() == secondParameter.getValue()) {
