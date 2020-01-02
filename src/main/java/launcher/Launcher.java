@@ -73,6 +73,8 @@ public class Launcher {
                 return new Day07_AmplificationCircuit();
             case 8:
                 return new Day08_SpaceImageFormat();
+            case 9:
+                return new Day09_SensorBoost();
             default:
                 return new Day00_NotDoneYet();
         }
