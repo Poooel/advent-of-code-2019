@@ -3,6 +3,8 @@ package launcher;
 import days.*;
 import lombok.SneakyThrows;
 
+import java.util.List;
+
 public class Launcher {
     @SneakyThrows
     public static void main(String[] args) {
@@ -22,9 +24,11 @@ public class Launcher {
             2
         );
 
+        List<String> input = ChallengeHelper.readInputData(choosenDay);
+
         if (choosenPart == 1) {
             long startTime = System.currentTimeMillis();
-            String result = getCorrespondingExecutableDay(choosenDay).executePartOne().toString();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartOne(input).toString();
             long endTime = System.currentTimeMillis();
 
             System.out.println(
@@ -38,7 +42,7 @@ public class Launcher {
             );
         } else {
             long startTime = System.currentTimeMillis();
-            String result = getCorrespondingExecutableDay(choosenDay).executePartTwo().toString();
+            String result = getCorrespondingExecutableDay(choosenDay).executePartTwo(input).toString();
             long endTime = System.currentTimeMillis();
 
             System.out.println(
