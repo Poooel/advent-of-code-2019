@@ -1,6 +1,5 @@
 package days;
 
-import launcher.ChallengeHelper;
 import launcher.Executable;
 
 import java.util.List;
@@ -8,8 +7,7 @@ import java.util.stream.Collectors;
 
 public class Day01_TheTyrannyOfTheRocketEquation implements Executable {
     @Override
-    public Object executePartOne() {
-        List<String> input = ChallengeHelper.readInputData(1);
+    public Object executePartOne(List<String> input) {
         // Cast strings to doubles to be able to divide it and keep precision
         List<Double> inputAsDoubles = input.stream()
             .mapToDouble(Double::parseDouble)
@@ -23,8 +21,7 @@ public class Day01_TheTyrannyOfTheRocketEquation implements Executable {
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(1);
+    public Object executePartTwo(List<String> input) {
         List<Double> inputAsDoubles = input.stream()
             .mapToDouble(Double::parseDouble)
             .boxed()

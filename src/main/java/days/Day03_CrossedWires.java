@@ -1,6 +1,5 @@
 package days;
 
-import launcher.ChallengeHelper;
 import launcher.Executable;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -9,16 +8,14 @@ import java.util.*;
 
 public class Day03_CrossedWires implements Executable {
     @Override
-    public Object executePartOne() {
-        List<String> input = ChallengeHelper.readInputData(3);
+    public Object executePartOne(List<String> input) {
         Set<Point> firstWire = drawWire(input.get(0));
         Set<Point> secondWire = drawWire(input.get(1));
         return findClosestIntersection(firstWire, secondWire);
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(3);
+    public Object executePartTwo(List<String> input) {
         Set<Point> firstWire = drawWire(input.get(0));
         Set<Point> secondWire = drawWire(input.get(1));
         return findLowestStepIntersection(firstWire, secondWire);

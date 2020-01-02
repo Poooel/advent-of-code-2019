@@ -1,14 +1,12 @@
 package days;
 
-import launcher.ChallengeHelper;
 import launcher.Executable;
 
 import java.util.*;
 
 public class Day04_SecureContainer implements Executable {
     @Override
-    public Object executePartOne() {
-        List<String> input = ChallengeHelper.readInputData(4);
+    public Object executePartOne(List<String> input) {
         String[] inputs = input.get(0).split("-");
         int lowerBound = Integer.parseInt(inputs[0]);
         int upperBound = Integer.parseInt(inputs[1]);
@@ -16,8 +14,7 @@ public class Day04_SecureContainer implements Executable {
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(4);
+    public Object executePartTwo(List<String> input) {
         String[] inputs = input.get(0).split("-");
         int lowerBound = Integer.parseInt(inputs[0]);
         int upperBound = Integer.parseInt(inputs[1]);

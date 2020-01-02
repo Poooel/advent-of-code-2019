@@ -1,6 +1,5 @@
 package days;
 
-import launcher.ChallengeHelper;
 import launcher.Executable;
 
 import java.util.Arrays;
@@ -8,9 +7,7 @@ import java.util.List;
 
 public class Day02_1202ProgramAlarm implements Executable {
     @Override
-    public Object executePartOne() {
-        // Get input from input file
-        List<String> input = ChallengeHelper.readInputData(2);
+    public Object executePartOne(List<String> input) {
         // Parse input into an integer array
         int[] parsedInput = parseInput(input);
         // Prepare the initial state with a noun = 12 and verb = 2
@@ -22,8 +19,7 @@ public class Day02_1202ProgramAlarm implements Executable {
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(2);
+    public Object executePartTwo(List<String> input) {
         int[] parsedInput = parseInput(input);
         return findState(parsedInput);
     }
