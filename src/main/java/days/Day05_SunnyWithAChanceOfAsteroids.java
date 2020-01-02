@@ -1,23 +1,27 @@
 package days;
 
 import computer.IntcodeComputer;
-import launcher.ChallengeHelper;
 import launcher.Executable;
+import lombok.SneakyThrows;
 
 import java.util.List;
 
 public class Day05_SunnyWithAChanceOfAsteroids implements Executable {
     @Override
-    public Object executePartOne() {
-        List<String> input = ChallengeHelper.readInputData(5);
-        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0), () -> 1);
-        return intcodeComputer.run();
+    @SneakyThrows
+    public Object executePartOne(List<String> input) {
+        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0));
+        intcodeComputer.getInputQueue().put(1);
+        intcodeComputer.run();
+        return intcodeComputer.getOutputQueue().take();
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(5);
-        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0), () -> 5);
-        return intcodeComputer.run();
+    @SneakyThrows
+    public Object executePartTwo(List<String> input) {
+        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0));
+        intcodeComputer.getInputQueue().put(5);
+        intcodeComputer.run();
+        return intcodeComputer.getOutputQueue().take();
     }
 }
