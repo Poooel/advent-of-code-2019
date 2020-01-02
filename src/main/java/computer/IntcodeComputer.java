@@ -1,211 +1,263 @@
 package computer;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Arrays;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 public class IntcodeComputer {
-    private final static int IO_QUEUE_CAPACITY = 1000;
-
-    private final int[] program;
+    private final Memory memory;
 
     @Getter
     @Setter
-    private BlockingQueue<Integer> inputQueue;
+    private IOBus inputBus;
+
     @Getter
     @Setter
-    private BlockingQueue<Integer> outputQueue;
+    private IOBus outputBus;
 
-    public IntcodeComputer(String program) {
-        this.program = parseProgram(program);
-        this.inputQueue = new ArrayBlockingQueue<>(IO_QUEUE_CAPACITY);
-        this.outputQueue = new ArrayBlockingQueue<>(IO_QUEUE_CAPACITY);
+    private int instructionPointer;
+
+    public IntcodeComputer() {
+        this.inputBus = new IOBus();
+        this.outputBus = new IOBus();
+        this.memory = new Memory();
     }
 
-    private int[] parseProgram(String input) {
-        return Arrays.stream(input.split(","))
-            .mapToInt(Integer::parseInt)
-            .toArray();
-    }
+    public void run(String program) {
+        long[] compiledProgram = compileProgram(program);
+        writeProgramToMemory(compiledProgram);
+        resetInstructionPointer();
 
-    @SneakyThrows
-    public void run() {
-        int[] program = Arrays.copyOf(this.program, this.program.length);
+        while (true) {
+            Instruction instruction = translateInstruction(memory.read(getInstructionPointer()));
 
-        for (int i = 0; i < program.length; i++) {
-            int[] instructions = deconstructOpcode(program[i]);
-
-            Parameter firstParameter = new Parameter(instructions[2]);
-            Parameter secondParameter = new Parameter(instructions[3]);
-            Result result;
-
-            int opcode = instructions[0] + (instructions[1] * 10);
-
-            switch (opcode) {
+            switch (instruction.getOpcode()) {
                 case 1:
-                    result = add(program, i, firstParameter, secondParameter);
+                    add(instruction);
                     break;
                 case 2:
-                    result = multiply(program, i, firstParameter, secondParameter);
+                    multiply(instruction);
                     break;
                 case 3:
-                    result = input(program, i, firstParameter, inputQueue.take());
+                    input(instruction);
                     break;
                 case 4:
-                    result = output(program, i, firstParameter);
-                    outputQueue.put(result.getValue());
+                    output(instruction);
                     break;
                 case 5:
-                    result = jumpIfTrue(program, i, firstParameter, secondParameter);
+                    jumpIfTrue(instruction);
                     break;
                 case 6:
-                    result = jumpIfFalse(program, i, firstParameter, secondParameter);
+                    jumpIfFalse(instruction);
                     break;
                 case 7:
-                    result = lessThan(program, i, firstParameter, secondParameter);
+                    lessThan(instruction);
                     break;
                 case 8:
-                    result = equals(program, i, firstParameter, secondParameter);
+                    equals(instruction);
+                    break;
+                case 9:
+                    adjustRelativeBaseOffset(instruction);
                     break;
                 case 99:
                     return;
                 default:
-                    result = new Result(0, 0, Integer.MIN_VALUE, false);
-                    break;
+                    throw new UnknownOpcodeException("Unknown opcode: " + instruction.getOpcode());
             }
-
-            if (result.isValuePresent()) {
-                program[result.getAddress()] = result.getValue();
-            }
-
-            i = result.getInstructionPointer();
         }
     }
 
-    private int[] deconstructOpcode(int opcode) {
-        int[] digits = new int[4];
+    private Instruction translateInstruction(long instruction) {
+        long[] rawInstruction = new long[5];
+
         int digitCounter = 0;
 
-        Arrays.fill(digits, 0);
-
-        while (opcode > 0) {
-            digits[digitCounter++] = opcode % 10;
-            opcode /= 10;
+        while (instruction > 0) {
+            rawInstruction[digitCounter++] = instruction % 10;
+            instruction /= 10;
         }
 
-        return digits;
+        int opcode = (int) (rawInstruction[0] + (rawInstruction[1] * 10));
+        int[] rawParameterModes = convertToIntArray(Arrays.copyOfRange(rawInstruction, 2, rawInstruction.length));
+
+        Mode[] parameterModes = new Mode[rawParameterModes.length];
+
+        for (int i = 0; i < rawParameterModes.length; i++) {
+            parameterModes[i] = getMode(rawParameterModes[i]);
+        }
+
+        return new Instruction(opcode, parameterModes);
     }
 
-    private Parameter getParameterValue(int[] program, int instructionPointer, Parameter parameter) {
-        if (parameter.getMode() == 0) {
-            int address = program[instructionPointer];
-            parameter.setValue(program[address]);
+    private int[] convertToIntArray(long[] longArray) {
+        int[] intArray = new int[longArray.length];
+
+        for (int i = 0; i < longArray.length; i++) {
+            intArray[i] = (int) longArray[i];
+        }
+
+        return intArray;
+    }
+
+    private long[] compileProgram(String program) {
+        return Arrays.stream(program.split(","))
+            .mapToLong(Long::parseLong)
+            .toArray();
+    }
+
+    private void writeProgramToMemory(long[] program) {
+        memory.writeRange(0, program);
+    }
+
+    private Mode getMode(int mode) {
+        if (mode < Mode.values().length) {
+            return Mode.values()[mode];
         } else {
-            parameter.setValue(program[instructionPointer]);
-        }
-
-        return parameter;
-    }
-
-    private Result add(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
-
-        int result = firstParameter.getValue() + secondParameter.getValue();
-        int resultAddress = program[++instructionPointer];
-
-        return new Result(result, resultAddress, instructionPointer, true);
-    }
-
-    private Result multiply(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
-
-        int result = firstParameter.getValue() * secondParameter.getValue();
-        int resultAddress = program[++instructionPointer];
-
-        return new Result(result, resultAddress, instructionPointer, true);
-    }
-
-    private Result input(int[] program, int instructionPointer, Parameter firstParameter, int inputValue) {
-        firstParameter.setMode(1);
-
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-
-        return new Result(inputValue, firstParameter.getValue(), instructionPointer, true);
-    }
-
-    private Result output(int[] program, int instructionPointer, Parameter firstParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-
-        return new Result(firstParameter.getValue(), 0, instructionPointer, false);
-    }
-
-    private Result jumpIfTrue(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
-
-        if (firstParameter.getValue() != 0) {
-            instructionPointer = secondParameter.getValue() - 1;
-        }
-
-        return new Result(0, 0, instructionPointer, false);
-    }
-
-    private Result jumpIfFalse(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
-
-        if (firstParameter.getValue() == 0) {
-            instructionPointer = secondParameter.getValue() - 1;
-        }
-
-        return new Result(0, 0, instructionPointer, false);
-    }
-
-    private Result lessThan(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
-
-        int resultAddress = program[++instructionPointer];
-
-        if (firstParameter.getValue() < secondParameter.getValue()) {
-            return new Result(1, resultAddress, instructionPointer, true);
-        } else {
-            return new Result(0, resultAddress, instructionPointer, true);
+            throw new UnknownModeException("Unknown mode: " + mode);
         }
     }
 
-    private Result equals(int[] program, int instructionPointer, Parameter firstParameter, Parameter secondParameter) {
-        firstParameter = getParameterValue(program, ++instructionPointer, firstParameter);
-        secondParameter = getParameterValue(program, ++instructionPointer, secondParameter);
+    private int getInstructionPointer() {
+        return instructionPointer++;
+    }
 
-        int resultAddress = program[++instructionPointer];
+    private void setInstructionPointer(int instructionPointer) {
+        this.instructionPointer = instructionPointer;
+    }
 
-        if (firstParameter.getValue() == secondParameter.getValue()) {
-            return new Result(1, resultAddress, instructionPointer, true);
-        } else {
-            return new Result(0, resultAddress, instructionPointer, true);
+    private void resetInstructionPointer() {
+        instructionPointer = 0;
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/2
+     *
+     * Opcode 1 adds together numbers read from two positions and stores the result in a third position.
+     * The three integers immediately after the opcode tell you these three positions -
+     * the first two indicate the positions from which you should read the input values,
+     * and the third indicates the position at which the output should be stored.
+     */
+    private void add(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
+
+        long r = a + b;
+
+        memory.write(getInstructionPointer(), r, instruction.getParameterModes()[2]);
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/2
+     *
+     * Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead
+     * of adding them. Again, the three integers after the opcode indicate where the inputs
+     * and outputs are, not their values.
+     */
+    private void multiply(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
+
+        long r = a * b;
+
+        memory.write(getInstructionPointer(), r, instruction.getParameterModes()[2]);
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 3 takes a single integer as input and saves it to the
+     * position given by its only parameter. For example, the instruction
+     * 3,50 would take an input value and store it at address 50.
+     */
+    private void input(Instruction instruction) {
+        memory.write(getInstructionPointer(), inputBus.take(), instruction.getParameterModes()[0]);
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 4 outputs the value of its only parameter. For example,
+     * the instruction 4,50 would output the value at address 50.
+     */
+    private void output(Instruction instruction) {
+        outputBus.put(memory.read(getInstructionPointer(), instruction.getParameterModes()[0]));
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 5 is jump-if-true: if the first parameter is non-zero,
+     * it sets the instruction pointer to the value from the second parameter.
+     * Otherwise, it does nothing.
+     */
+    private void jumpIfTrue(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
+
+        if (a != 0) {
+            setInstructionPointer((int) b);
         }
     }
 
-    @Data
-    private static final class Parameter {
-        private int mode;
-        private int value;
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 6 is jump-if-false: if the first parameter is zero,
+     * it sets the instruction pointer to the value from the second parameter.
+     * Otherwise, it does nothing.
+     */
+    private void jumpIfFalse(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
 
-        public Parameter(int mode) {
-            this.mode = mode;
+        if (a == 0) {
+            setInstructionPointer((int) b);
         }
     }
 
-    @Value
-    private static final class Result {
-        private int value;
-        private int address;
-        private int instructionPointer;
-        private boolean valuePresent;
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 7 is less than: if the first parameter is less than the second parameter,
+     * it stores 1 in the position given by the third parameter.
+     * Otherwise, it stores 0.
+     */
+    private void lessThan(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
+
+        long r = a < b ? 1 : 0;
+
+        memory.write(getInstructionPointer(), r, instruction.getParameterModes()[2]);
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/5
+     *
+     * Opcode 8 is equals: if the first parameter is equal to the second parameter,
+     * it stores 1 in the position given by the third parameter.
+     * Otherwise, it stores 0.
+     */
+    private void equals(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+        long b = memory.read(getInstructionPointer(), instruction.getParameterModes()[1]);
+
+        long r = a == b ? 1 : 0;
+
+        memory.write(getInstructionPointer(), r, instruction.getParameterModes()[2]);
+    }
+
+    /**
+     * https://adventofcode.com/2019/day/9
+     *
+     * Opcode 9 adjusts the relative base by the value of its only parameter.
+     * The relative base increases (or decreases, if the value is negative)
+     * by the value of the parameter.
+     */
+    private void adjustRelativeBaseOffset(Instruction instruction) {
+        long a = memory.read(getInstructionPointer(), instruction.getParameterModes()[0]);
+
+        memory.addToRelativeBaseOffset((int) a);
     }
 }
