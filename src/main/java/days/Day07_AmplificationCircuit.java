@@ -23,75 +23,75 @@ public class Day07_AmplificationCircuit implements Executable {
 
     @SneakyThrows
     private int findLargestOutput(List<String> input) {
-        IntcodeComputer intcodeComputer = new IntcodeComputer(input.get(0));
+        IntcodeComputer intcodeComputer = new IntcodeComputer();
         Set<List<Integer>> phaseSettingCombinations = getAllCombinations(0, 5);
-        int maximumOutput = Integer.MIN_VALUE;
+        long maximumOutput = Integer.MIN_VALUE;
 
         for (List<Integer> phaseSettings : phaseSettingCombinations) {
-            int outputSignal = 0;
+            long outputSignal = 0;
 
             for (Integer phaseSetting : phaseSettings) {
-                intcodeComputer.getInputQueue().put(phaseSetting);
-                intcodeComputer.getInputQueue().put(outputSignal);
+                intcodeComputer.getInputBus().put((long) phaseSetting);
+                intcodeComputer.getInputBus().put(outputSignal);
 
-                intcodeComputer.run();
+                intcodeComputer.run(input.get(0));
 
-                outputSignal = intcodeComputer.getOutputQueue().take();
+                outputSignal = intcodeComputer.getOutputBus().take();
             }
 
             maximumOutput = Math.max(maximumOutput, outputSignal);
         }
 
-        return maximumOutput;
+        return (int) maximumOutput;
     }
 
     @SneakyThrows
     private int findLargestOutputWithFeedbackLoop(List<String> input) {
-        IntcodeComputer amplifierA = new IntcodeComputer(input.get(0));
-        IntcodeComputer amplifierB = new IntcodeComputer(input.get(0));
-        IntcodeComputer amplifierC = new IntcodeComputer(input.get(0));
-        IntcodeComputer amplifierD = new IntcodeComputer(input.get(0));
-        IntcodeComputer amplifierE = new IntcodeComputer(input.get(0));
+        IntcodeComputer amplifierA = new IntcodeComputer();
+        IntcodeComputer amplifierB = new IntcodeComputer();
+        IntcodeComputer amplifierC = new IntcodeComputer();
+        IntcodeComputer amplifierD = new IntcodeComputer();
+        IntcodeComputer amplifierE = new IntcodeComputer();
 
         Set<List<Integer>> phaseSettingCombinations = getAllCombinations(5, 10);
-        int maximumOutput = Integer.MIN_VALUE;
+        long maximumOutput = Integer.MIN_VALUE;
 
-        amplifierB.setInputQueue(amplifierA.getOutputQueue());
-        amplifierC.setInputQueue(amplifierB.getOutputQueue());
-        amplifierD.setInputQueue(amplifierC.getOutputQueue());
-        amplifierE.setInputQueue(amplifierD.getOutputQueue());
-        amplifierA.setInputQueue(amplifierE.getOutputQueue());
+        amplifierB.setInputBus(amplifierA.getOutputBus());
+        amplifierC.setInputBus(amplifierB.getOutputBus());
+        amplifierD.setInputBus(amplifierC.getOutputBus());
+        amplifierE.setInputBus(amplifierD.getOutputBus());
+        amplifierA.setInputBus(amplifierE.getOutputBus());
 
         List<IntcodeComputer> computers = Arrays.asList(amplifierA, amplifierB, amplifierC, amplifierD, amplifierE);
 
         for (List<Integer> phaseSettings : phaseSettingCombinations) {
             for (int i = 0; i < computers.size(); i++) {
-                computers.get(i).getInputQueue().put(phaseSettings.get(i));
+                computers.get(i).getInputBus().put((long) phaseSettings.get(i));
             }
 
-            amplifierA.getInputQueue().put(0);
+            amplifierA.getInputBus().put(0);
 
             ExecutorService executorService = Executors.newFixedThreadPool(computers.size());
             CountDownLatch countDownLatch = new CountDownLatch(computers.size());
 
             for (IntcodeComputer computer : computers) {
                 executorService.submit(() -> {
-                    computer.run();
+                    computer.run(input.get(0));
                     countDownLatch.countDown();
                 });
             }
 
             countDownLatch.await();
 
-            maximumOutput = Math.max(maximumOutput, amplifierE.getOutputQueue().take());
+            maximumOutput = Math.max(maximumOutput, amplifierE.getOutputBus().take());
 
             for (IntcodeComputer computer : computers) {
-                computer.getInputQueue().clear();
-                computer.getOutputQueue().clear();
+                computer.getInputBus().clear();
+                computer.getOutputBus().clear();
             }
         }
 
-        return maximumOutput;
+        return (int) maximumOutput;
     }
 
     private Set<List<Integer>> getAllCombinations(int lowerBound, int upperBound) {
