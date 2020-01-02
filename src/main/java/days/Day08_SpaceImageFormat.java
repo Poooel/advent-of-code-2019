@@ -1,6 +1,5 @@
 package days;
 
-import launcher.ChallengeHelper;
 import launcher.Executable;
 
 import java.util.ArrayList;
@@ -11,8 +10,7 @@ public class Day08_SpaceImageFormat implements Executable {
     private static final int IMAGE_WIDTH = 25;
 
     @Override
-    public Object executePartOne() {
-        List<String> input = ChallengeHelper.readInputData(8);
+    public Object executePartOne(List<String> input) {
         int[] imageData = parseInput(input);
         List<int[][]> image = parseImage(imageData);
         int[][] layer = findLayerWithFewestZeroes(image);
@@ -20,8 +18,7 @@ public class Day08_SpaceImageFormat implements Executable {
     }
 
     @Override
-    public Object executePartTwo() {
-        List<String> input = ChallengeHelper.readInputData(8);
+    public Object executePartTwo(List<String> input) {
         int[] imageData = parseInput(input);
         List<int[][]> image = parseImage(imageData);
         int[][] finalImage = flattenImage(image);
