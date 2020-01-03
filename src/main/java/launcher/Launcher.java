@@ -75,6 +75,8 @@ public class Launcher {
                 return new Day08_SpaceImageFormat();
             case 9:
                 return new Day09_SensorBoost();
+            case 11:
+                return new Day11_SpacePolice();
             default:
                 return new Day00_NotDoneYet();
         }
