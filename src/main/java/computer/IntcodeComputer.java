@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.util.Arrays;
 
 public class IntcodeComputer {
+    public static final long ENDING_SIGNAL = 9_223_372_036_854_775_806L;
+
     private final Memory memory;
 
     @Getter
@@ -22,6 +24,10 @@ public class IntcodeComputer {
         this.inputBus = new IOBus();
         this.outputBus = new IOBus();
         this.memory = new Memory();
+    }
+
+    public void runAsync(String program) {
+        new Thread(() -> run(program)).start();
     }
 
     public void run(String program) {
@@ -61,6 +67,7 @@ public class IntcodeComputer {
                     adjustRelativeBaseOffset(instruction);
                     break;
                 case 99:
+                    outputBus.put(ENDING_SIGNAL);
                     return;
                 default:
                     throw new UnknownOpcodeException("Unknown opcode: " + instruction.getOpcode());

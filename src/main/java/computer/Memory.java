@@ -33,14 +33,12 @@ public class Memory {
     public void write(int address, long value, Mode mode) {
         isValidAddress(address);
 
-        // https://adventofcode.com/2019/day/5
-        //
-        // Why IMMEDIATE mode is missing:
-        // Parameters that an instruction writes to will never be in immediate mode.
-
         switch (mode) {
             case POSITION:
                 internalMemory[getPositionAddress(address)] = value;
+                break;
+            case IMMEDIATE:
+                internalMemory[address] = value;
                 break;
             case RELATIVE:
                 internalMemory[getRelativeAddress(address)] = value;
