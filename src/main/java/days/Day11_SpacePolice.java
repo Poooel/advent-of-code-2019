@@ -48,7 +48,7 @@ public class Day11_SpacePolice implements Executable {
     private Map<Coordinates, Integer> computePanelsToPaint(List<String> input, int startingColor) {
         IntcodeComputer intcodeComputer = new IntcodeComputer();
 
-        new Thread(() -> intcodeComputer.run(input.get(0))).start();
+        intcodeComputer.runAsync(input.get(0));
 
         Map<Coordinates, Integer> paintedPanels = new HashMap<>();
         Coordinates robotCoordinates = new Coordinates(0, 0);
@@ -67,7 +67,7 @@ public class Day11_SpacePolice implements Executable {
             Long colorToPaint = intcodeComputer.getOutputBus().poll(10, TimeUnit.MILLISECONDS);
             Long direction = intcodeComputer.getOutputBus().poll(10, TimeUnit.MILLISECONDS);
 
-            if (colorToPaint == null && direction == null) {
+            if (colorToPaint != null && colorToPaint == IntcodeComputer.ENDING_SIGNAL) {
                 break;
             }
 
